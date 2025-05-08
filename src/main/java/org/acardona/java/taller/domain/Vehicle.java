@@ -24,6 +24,9 @@ public class Vehicle {
         this.brand = brand;
     }
 
+    public Vehicle(String brand, String model, String year, String licensePlate, String type, Client client) {
+    }
+
     public String getId() {
         return id;
     }
@@ -56,7 +59,7 @@ public class Vehicle {
         this.license_plate = license_plate;
     }
 
-    public int getYear() {
+    public String getYear() {
         return year;
     }
 
