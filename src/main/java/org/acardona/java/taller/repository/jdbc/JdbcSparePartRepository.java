@@ -134,6 +134,14 @@ public class JdbcSparePartRepository implements Repository<SparePart> {
 
     @Override
     public void delete(String id) {
+        try(Connection conn=DatabaseConnection.getInstance()){
+            String sql = "DELETE FROM spare_parts WHERE id = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1,"id");
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting spare_parts",e);
+        }
 
     }
 }
