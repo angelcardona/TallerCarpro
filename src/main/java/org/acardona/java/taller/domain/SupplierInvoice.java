@@ -25,6 +25,9 @@ public class SupplierInvoice {
         this.date = date;
     }
 
+    public SupplierInvoice(LocalDateTime date, Supplier supplier, Vehicle vehicle, double total, String description) {
+    }
+
     public String getId() {
         return id;
     }

@@ -27,6 +27,10 @@ public class Vehicle {
     public Vehicle(String brand, String model, String year, String licensePlate, String type, Client client) {
     }
 
+
+    public Vehicle(String brand, String model, int year, String licensePlate, String type, Object client) {
+    }
+
     public String getId() {
         return id;
     }

@@ -6,16 +6,19 @@ public class Mechanic {
     private  String id;
     private String name;
     private String phone;
-    private double weeklyPayment;
+
 
     public Mechanic() {
     }
 
-    public Mechanic(String id, double weeklyPayment, String phone, String name) {
+    public Mechanic(String id, String phone, String name) {
         this.id = UUID.randomUUID().toString();
-        this.weeklyPayment = weeklyPayment;
+
         this.phone = phone;
         this.name = name;
+    }
+
+    public Mechanic(String name, String phone) {
     }
 
     public String getId() {
@@ -24,14 +27,6 @@ public class Mechanic {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public double getWeeklyPayment() {
-        return weeklyPayment;
-    }
-
-    public void setWeeklyPayment(double weeklyPayment) {
-        this.weeklyPayment = weeklyPayment;
     }
 
     public String getPhone() {

@@ -6,16 +6,22 @@ public class SparePart {
     private String description;
     private double cost;
     private double profitPercentage;
+    private SupplierInvoice supplierInvoice;
 
     public SparePart() {
     }
 
-    public SparePart(String id, double profitPercentage, double cost, String name, String description) {
+    public SparePart(String id, double profitPercentage, double cost, String name, String description,SupplierInvoice supplierInvoice) {
         this.id = id;
         this.profitPercentage = profitPercentage;
         this.cost = cost;
         this.name = name;
         this.description = description;
+        this.supplierInvoice=supplierInvoice;
+    }
+
+    public SparePart(String name, String description, double profitPercentage, SupplierInvoice supplierInvoice) {
+
     }
 
     public String getId() {
@@ -56,5 +62,13 @@ public class SparePart {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public SupplierInvoice getSupplierInvoice() {
+        return supplierInvoice;
+    }
+
+    public void setSupplierInvoice(SupplierInvoice supplierInvoice) {
+        this.supplierInvoice = supplierInvoice;
     }
 }
