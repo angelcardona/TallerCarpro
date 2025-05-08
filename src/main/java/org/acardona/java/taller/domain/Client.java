@@ -9,7 +9,7 @@ public class Client {
     private String phone;
     private String identification;
 
-    public Client() {
+    public Client(String name, String email, String phone, String identification) {
     }
 
     public Client(String id, String identification, String phone, String email, String name) {
