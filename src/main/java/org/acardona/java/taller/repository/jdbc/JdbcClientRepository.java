@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Optional;
 
 
-public class JdbcClientRepository implements Repository <Client> {
+public abstract class JdbcClientRepository implements Repository <Client> {
 
 
     @Override
