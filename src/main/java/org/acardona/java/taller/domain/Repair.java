@@ -1,8 +1,9 @@
 package org.acardona.java.taller.domain;
 
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 public class Repair {
     private String id;
@@ -12,35 +13,93 @@ public class Repair {
     private Mechanic mechanic;
     private String status;
     private Vehicle vehicle;
-    private double mechanic_labor_percentage;
-    private Date start_date;
+    private double mechanicLaborPercentage;
+    private LocalDateTime startDate;
+    private List<SparePart> spareParts;
 
-    public Repair() {
+    public Repair(String repairType, String description, double laborCost, double mechanicLaborPercentage,
+                  String status, Vehicle vehicle, Mechanic mechanic, LocalDateTime startDate) {
+        if (repairType == null || repairType.isEmpty()) {
+            throw new IllegalArgumentException("Repair type cannot be null or empty");
+        }
+        if (laborCost < 0) {
+            throw new IllegalArgumentException("Labor cost cannot be negative");
+        }
+        if (mechanicLaborPercentage < 0 || mechanicLaborPercentage > 100) {
+            throw new IllegalArgumentException("Mechanic labor percentage must be between 0 and 100");
+        }
+        if (status == null || status.isEmpty()) {
+            throw new IllegalArgumentException("Status cannot be null or empty");
+        }
+        if (vehicle == null) {
+            throw new IllegalArgumentException("Vehicle cannot be null");
+        }
+        if (mechanic == null) {
+            throw new IllegalArgumentException("Mechanic cannot be null");
+        }
+        if (startDate == null) {
+            throw new IllegalArgumentException("Start date cannot be null");
+        }
+        this.id = UUID.randomUUID().toString();
+        this.repairType = repairType;
+        this.description = description;
+        this.laborCost = laborCost;
+        this.mechanicLaborPercentage = mechanicLaborPercentage;
+        this.status = status;
+        this.vehicle = vehicle;
+        this.mechanic = mechanic;
+        this.startDate = startDate;
+        this.spareParts = new ArrayList<>();
     }
 
-    public Repair(String id, String repairType, String description, double laborCost, Mechanic mechanic,
-                  String status, Vehicle vehicle, double mechanic_labor_percentage) {
+    // Constructor para cargar desde la base de datos
+    public Repair(String id, String repairType, String description, double laborCost, double mechanicLaborPercentage,
+                  String status, Vehicle vehicle, Mechanic mechanic, LocalDateTime startDate) {
+        if (id == null || id.isEmpty()) {
+            throw new IllegalArgumentException("ID cannot be null or empty");
+        }
+        if (repairType == null || repairType.isEmpty()) {
+            throw new IllegalArgumentException("Repair type cannot be null or empty");
+        }
+        if (laborCost < 0) {
+            throw new IllegalArgumentException("Labor cost cannot be negative");
+        }
+        if (mechanicLaborPercentage < 0 || mechanicLaborPercentage > 100) {
+            throw new IllegalArgumentException("Mechanic labor percentage must be between 0 and 100");
+        }
+        if (status == null || status.isEmpty()) {
+            throw new IllegalArgumentException("Status cannot be null or empty");
+        }
+        if (vehicle == null) {
+            throw new IllegalArgumentException("Vehicle cannot be null");
+        }
+        if (mechanic == null) {
+            throw new IllegalArgumentException("Mechanic cannot be null");
+        }
+        if (startDate == null) {
+            throw new IllegalArgumentException("Start date cannot be null");
+        }
         this.id = id;
         this.repairType = repairType;
         this.description = description;
         this.laborCost = laborCost;
-        this.mechanic = mechanic;
+        this.mechanicLaborPercentage = mechanicLaborPercentage;
         this.status = status;
         this.vehicle = vehicle;
-        this.mechanic_labor_percentage = mechanic_labor_percentage;
+        this.mechanic = mechanic;
+        this.startDate = startDate;
+        this.spareParts = new ArrayList<>();
     }
 
-    public Repair(String repairType, String description, double laborCost, double mechanicLaborPercentage, String status, Optional<Vehicle> vehicle, Mechanic mechanic) {
-    }
-
-    public Repair(String repairType, String description, double laborCost, double mechanicLaborPercentage, String status, Vehicle vehicle, Mechanic mechanic) {
-    }
-
+    // Getters y setters
     public String getId() {
         return id;
     }
 
     public void setId(String id) {
+        if (id == null || id.isEmpty()) {
+            throw new IllegalArgumentException("ID cannot be null or empty");
+        }
         this.id = id;
     }
 
@@ -49,6 +108,9 @@ public class Repair {
     }
 
     public void setRepairType(String repairType) {
+        if (repairType == null || repairType.isEmpty()) {
+            throw new IllegalArgumentException("Repair type cannot be null or empty");
+        }
         this.repairType = repairType;
     }
 
@@ -65,6 +127,9 @@ public class Repair {
     }
 
     public void setLaborCost(double laborCost) {
+        if (laborCost < 0) {
+            throw new IllegalArgumentException("Labor cost cannot be negative");
+        }
         this.laborCost = laborCost;
     }
 
@@ -73,6 +138,9 @@ public class Repair {
     }
 
     public void setMechanic(Mechanic mechanic) {
+        if (mechanic == null) {
+            throw new IllegalArgumentException("Mechanic cannot be null");
+        }
         this.mechanic = mechanic;
     }
 
@@ -81,6 +149,9 @@ public class Repair {
     }
 
     public void setStatus(String status) {
+        if (status == null || status.isEmpty()) {
+            throw new IllegalArgumentException("Status cannot be null or empty");
+        }
         this.status = status;
     }
 
@@ -89,31 +160,42 @@ public class Repair {
     }
 
     public void setVehicle(Vehicle vehicle) {
+        if (vehicle == null) {
+            throw new IllegalArgumentException("Vehicle cannot be null");
+        }
         this.vehicle = vehicle;
     }
-    public double getMechanic_labor_percentage() {
-        return mechanic_labor_percentage;
+
+    public double getMechanicLaborPercentage() {
+        return mechanicLaborPercentage;
     }
 
-    public void setMechanic_labor_percentage(double mechanic_labor_percentage) {
-        this.mechanic_labor_percentage = mechanic_labor_percentage;
+    public void setMechanicLaborPercentage(double mechanicLaborPercentage) {
+        if (mechanicLaborPercentage < 0 || mechanicLaborPercentage > 100) {
+            throw new IllegalArgumentException("Mechanic labor percentage must be between 0 and 100");
+        }
+        this.mechanicLaborPercentage = mechanicLaborPercentage;
     }
 
-    public LocalDateTime getStart_date() {
-        return start_date;
-    }
-
-    public void setStart_date(Date start_date) {
-        this.start_date = start_date;
-    }
-
-    public Iterable<? extends SparePart> getSpareParts() {
-        return null;
-    }
-
-    public void addSparePart(SparePart sparePart) {
+    public LocalDateTime getStartDate() {
+        return startDate;
     }
 
     public void setStartDate(LocalDateTime startDate) {
+        if (startDate == null) {
+            throw new IllegalArgumentException("Start date cannot be null");
+        }
+        this.startDate = startDate;
+    }
+
+    public List<SparePart> getSpareParts() {
+        return spareParts;
+    }
+
+    public void addSparePart(SparePart sparePart) {
+        if (sparePart == null) {
+            throw new IllegalArgumentException("Spare part cannot be null");
+        }
+        this.spareParts.add(sparePart);
     }
 }
