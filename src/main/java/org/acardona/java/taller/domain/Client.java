@@ -20,6 +20,9 @@ public class Client {
         this.name = name;
     }
 
+    public Client(String name, String contact, String email) {
+    }
+
     public String getId() {
         return id;
     }
