@@ -112,29 +112,28 @@ public abstract class JdbcRepairRepository implements Repository {
                                 orElseThrow(() -> new RuntimeException("Supplier not found")),
                         sparePartsRs.getString("vehicle_id")!= null ?
                                 supplierInvoiceRepository.findById(sparePartsRs.getString("vehicle_id"))
-                                        .map(si ->si.getVehicle())
+                                        .map(SupplierInvoice::getVehicle)
                                         .orElse(null) : null,
                         sparePartsRs.getDouble("total"),
-                        sparePartsRs.getString("description");
-
-
-
-                    }
+                        sparePartsRs.getString("description")
+                        );
+                        SparePart sparePart=new SparePart(
+                                rs.getString("name"),
+                                rs.getString("description"),
+                                rs.getDouble("profit_percentage"),
+                                supplierInvoice
+                        );
+                        sparePart.setId((sparePartsRs.getString("id")));
+                        repair.addSparePart(sparePart);
                 }
+                return  Optional.of(repair);
 
 
 
 
-            } catch (SQLException ex) {
-            throw new RuntimeException(ex);
         }
-        return Optional.empty();
-        } catch (SQLException e) {
-            throw new RuntimeException("Error Finding client",e);
-        }
-    }
 
-    @Override
+        @Override
     public List findAll() {
         return List.of();
     }

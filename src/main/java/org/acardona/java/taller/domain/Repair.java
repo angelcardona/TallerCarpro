@@ -96,7 +96,7 @@ public class Repair {
         this.mechanic_labor_percentage = mechanic_labor_percentage;
     }
 
-    public Date getStart_date() {
+    public String getStart_date() {
         return start_date;
     }
 
@@ -106,5 +106,8 @@ public class Repair {
 
     public Iterable<? extends SparePart> getSpareParts() {
         return null;
+    }
+
+    public void addSparePart(SparePart sparePart) {
     }
 }
