@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class JdbcSparePartRepository implements Repository<SparePart> {
+public abstract class JdbcSparePartRepository implements Repository<SparePart> {
     private final Repository<SupplierInvoice> supplierInvoiceRepository;
 
     public JdbcSparePartRepository(Repository<SupplierInvoice> supplierInvoiceRepository) {

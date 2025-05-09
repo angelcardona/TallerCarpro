@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class JdbcVehicleRepository implements Repository<Vehicle> {
+public abstract class JdbcVehicleRepository implements Repository<Vehicle> {
     @Override
     public Vehicle save(Vehicle vehicle) {
         try(Connection conn = DatabaseConnection.getInstance()){
