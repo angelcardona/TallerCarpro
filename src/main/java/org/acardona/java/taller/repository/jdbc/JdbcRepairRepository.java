@@ -5,6 +5,7 @@ import org.acardona.java.taller.domain.*;
 import org.acardona.java.taller.util.DatabaseConnection;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,19 +66,18 @@ public abstract class JdbcRepairRepository implements Repository {
 
     @Override
     public Optional <Repair>findById(String id) {
-        try(Connection conn = DatabaseConnection.getInstance()){
-            String sql = "SELECT r.*,v.id as vehicle_id,v.brand,v.model,v.year,v.license_plate,v.type" +
-                    ",m.id as mechanic_id,n.name as mechanic_name,m.email" +
-                    "FROM repairs r," +
-                    "JOIN vehicles v ON r.vehicle_id=v.id" +
-                    "JOIN mechanics m ON r.mechanic_id=m.id" +
-                    "WHERE r.id= ?";
-            PreparedStatement stmt=conn.prepareStatement(sql);
-            stmt.setString(1,id);
-            ResultSet rs=stmt.executeQuery();
-            if(rs.next()){
-                Optional<Vehicle> vehicle=vehicleRepository.findById(rs.getString(("Vehicle_id"))
-                        .describeConstable().orElseThrow(() -> new RuntimeException("Vehicle not Found")));
+        try (Connection conn = DatabaseConnection.getInstance()) {
+            String sql = "SELECT r.*, v.id as vehicle_id, v.brand, v.model, v.year, v.license_plate, v.type, " +
+                    "m.id as mechanic_id, m.name as mechanic_name, m.email " +
+                    "FROM repairs r " +
+                    "JOIN vehicles v ON r.vehicle_id = v.id " +
+                    "JOIN mechanics m ON r.mechanic_id = m.id WHERE r.id = ?";
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                Vehicle vehicle = vehicleRepository.findById(rs.getString("vehicle_id"))
+                        .orElseThrow(() -> new RuntimeException("Vehicle not found"));
                 Mechanic mechanic = new Mechanic(
                         rs.getString("mechanic_name"),
                         rs.getString("email")
@@ -93,53 +93,149 @@ public abstract class JdbcRepairRepository implements Repository {
                         mechanic
                 );
                 repair.setId(rs.getString("id"));
-                repair.setStart_date(rs.getTimestamp("start_date").toLocalDateTime());
-                //Charging Spare
+                repair.setStartDate(rs.getTimestamp("start_date").toLocalDateTime());
 
-                String sparePartSql="SELECT sp.*,si.id as si.id,si.date,si.supplier_id," +
-                        "FROM spare_parts sp" +
-                        "JOIN repair_spare_parts rsp ON sp.id =rsp.spare_part_id," +
-                        "LEFT JOIN supplier_invoices si ON sp.supplier_invoice_id=si.id" +
-                        "WHERE rsp.repair_id=?";
-                PreparedStatement sparePartsStmt= conn.prepareStatement(sparePartSql);
-                sparePartsStmt.setString(1,id);
-                ResultSet sparePartsRs=sparePartsStmt.executeQuery();
-                while (sparePartsRs.next()){
+                // Cargar repuestos
+                String sparePartsSql = "SELECT sp.*, si.id as si_id, si.date, si.supplier_id, si.vehicle_id, si.total, si.description, si.paid " +
+                        "FROM spare_parts sp " +
+                        "JOIN repair_spare_parts rsp ON sp.id = rsp.spare_part_id " +
+                        "LEFT JOIN supplier_invoices si ON sp.supplier_invoice_id = si.id " +
+                        "WHERE rsp.repair_id = ?";
+                PreparedStatement sparePartsStmt = conn.prepareStatement(sparePartsSql);
+                sparePartsStmt.setString(1, id);
+                ResultSet sparePartsRs = sparePartsStmt.executeQuery();
+                while (sparePartsRs.next()) {
                     SupplierInvoice supplierInvoice = null;
-                    if (sparePartsRs.getString("si_id")!= null){
-                        sparePartsRs.getTimestamp("date").toLocalDateTime(),
-                        supplierInvoiceRepository.findById(sparePartsRs.getString("supplier_id")).
-                                orElseThrow(() -> new RuntimeException("Supplier not found")),
-                        sparePartsRs.getString("vehicle_id")!= null ?
-                                supplierInvoiceRepository.findById(sparePartsRs.getString("vehicle_id"))
-                                        .map(SupplierInvoice::getVehicle)
-                                        .orElse(null) : null,
-                        sparePartsRs.getDouble("total"),
-                        sparePartsRs.getString("description")
+                    if (sparePartsRs.getString("si_id") != null) {
+                        supplierInvoice = new SupplierInvoice(
+                                sparePartsRs.getTimestamp("date").toLocalDateTime(),
+                                supplierInvoiceRepository.findById(sparePartsRs.getString("supplier_id"))
+                                        .orElseThrow(() -> new RuntimeException("Supplier not found")).getSupplier(),
+                                sparePartsRs.getString("vehicle_id") != null ?
+                                        supplierInvoiceRepository.findById(sparePartsRs.getString("vehicle_id"))
+                                                .map(si -> si.getVehicle())
+                                                .orElse(null) : null,
+                                sparePartsRs.getDouble("total"),
+                                sparePartsRs.getString("description")
                         );
-                        SparePart sparePart=new SparePart(
-                                rs.getString("name"),
-                                rs.getString("description"),
-                                rs.getDouble("profit_percentage"),
-                                supplierInvoice
-                        );
-                        sparePart.setId((sparePartsRs.getString("id")));
-                        repair.addSparePart(sparePart);
+                        supplierInvoice.setId(sparePartsRs.getString("si_id"));
+                        supplierInvoice.setPaid(sparePartsRs.getBoolean("paid"));
+                    }
+                    SparePart sparePart = new SparePart(
+                            sparePartsRs.getString("name"),
+                            sparePartsRs.getString("description"),
+                            sparePartsRs.getDouble("cost"),
+                            sparePartsRs.getDouble("profit_percentage"),
+                            supplierInvoice
+                    );
+                    sparePart.setId(sparePartsRs.getString("id"));
+                    repair.addSparePart(sparePart);
                 }
-                return  Optional.of(repair);
-
-
-
-
+                return Optional.of(repair);
+            }
+            return Optional.empty();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error finding repair", e);
         }
 
+
+
+    }
+
         @Override
-    public List findAll() {
-        return List.of();
+    public List<Repair> findAll() {
+            List<Repair> repairs = new ArrayList<>();
+            try (Connection conn = DatabaseConnection.getInstance()
+
+
+            ) {
+                String sql = "SELECT r.*, v.id as vehicle_id, v.brand, v.model, v.year, v.license_plate, v.type, " +
+                        "m.id as mechanic_id, m.name as mechanic_name, m.email " +
+                        "FROM repairs r " +
+                        "JOIN vehicles v ON r.vehicle_id = v.id " +
+                        "JOIN mechanics m ON r.mechanic_id = m.id";
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery();
+                while (rs.next()) {
+                    Vehicle vehicle = vehicleRepository.findById(rs.getString("vehicle_id"))
+                            .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+                    Mechanic mechanic = new Mechanic(
+                            rs.getString("mechanic_name"),
+                            rs.getString("email")
+                    );
+                    mechanic.setId(rs.getString("mechanic_id"));
+                    Repair repair = new Repair(
+                            rs.getString("repair_type"),
+                            rs.getString("description"),
+                            rs.getDouble("labor_cost"),
+                            rs.getDouble("mechanic_labor_percentage"),
+                            rs.getString("status"),
+                            vehicle,
+                            mechanic
+                    );
+                    repair.setId(rs.getString("id"));
+                    repair.setStartDate(rs.getTimestamp("start_date").toLocalDateTime());
+
+                    // Cargar repuestos
+                    String sparePartsSql = "SELECT sp.*, si.id as si_id, si.date, si.supplier_id, si.vehicle_id, si.total, si.description, si.paid " +
+                            "FROM spare_parts sp " +
+                            "JOIN repair_spare_parts rsp ON sp.id = rsp.spare_part_id " +
+                            "LEFT JOIN supplier_invoices si ON sp.supplier_invoice_id = si.id " +
+                            "WHERE rsp.repair_id = ?";
+                    PreparedStatement sparePartsStmt = conn.prepareStatement(sparePartsSql);
+                    sparePartsStmt.setString(1, repair.getId());
+                    ResultSet sparePartsRs = sparePartsStmt.executeQuery();
+                    while (sparePartsRs.next()) {
+                        SupplierInvoice supplierInvoice = null;
+                        if (sparePartsRs.getString("si_id") != null) {
+                            supplierInvoice = new SupplierInvoice(
+                                    sparePartsRs.getTimestamp("date").toLocalDateTime(),
+                                    supplierInvoiceRepository.findById(sparePartsRs.getString("supplier_id"))
+                                            .orElseThrow(() -> new RuntimeException("Supplier not found")).getSupplier(),
+                                    sparePartsRs.getString("vehicle_id") != null ?
+                                            supplierInvoiceRepository.findById(sparePartsRs.getString("vehicle_id"))
+                                                    .map(si -> si.getVehicle())
+                                                    .orElse(null) : null,
+                                    sparePartsRs.getDouble("total"),
+                                    sparePartsRs.getString("description")
+                            );
+                            supplierInvoice.setId(sparePartsRs.getString("si_id"));
+                            supplierInvoice.setPaid(sparePartsRs.getBoolean("paid"));
+                        }
+                        SparePart sparePart = new SparePart(
+                                sparePartsRs.getString("name"),
+                                sparePartsRs.getString("description"),
+                                sparePartsRs.getDouble("cost"),
+                                sparePartsRs.getDouble("profit_percentage"),
+                                supplierInvoice
+                        );
+                        sparePart.setId(sparePartsRs.getString("id"));
+                        repair.addSparePart(sparePart);
+                    }
+                    repairs.add(repair);
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException("Error finding all repairs", e);
+            }
+            return repairs;
     }
 
     @Override
     public void delete(String id) {
+        try (Connection conn = DatabaseConnection.getInstance()) {
+            String deleteSparePartsSql = "DELETE FROM repair_spare_parts WHERE repair_id = ?";
+            PreparedStatement deleteSparePartsStmt = conn.prepareStatement(deleteSparePartsSql);
+            deleteSparePartsStmt.setString(1, id);
+            deleteSparePartsStmt.executeUpdate();
+
+            String deleteSql = "DELETE FROM repairs WHERE id = ?";
+            PreparedStatement deleteStmt = conn.prepareStatement(deleteSql);
+            deleteStmt.setString(1, id);
+            deleteStmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Error deleting repair", e);
+        }
+    }
 
     }
-}
+

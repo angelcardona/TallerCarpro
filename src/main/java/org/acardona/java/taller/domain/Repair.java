@@ -33,6 +33,9 @@ public class Repair {
     public Repair(String repairType, String description, double laborCost, double mechanicLaborPercentage, String status, Optional<Vehicle> vehicle, Mechanic mechanic) {
     }
 
+    public Repair(String repairType, String description, double laborCost, double mechanicLaborPercentage, String status, Vehicle vehicle, Mechanic mechanic) {
+    }
+
     public String getId() {
         return id;
     }
@@ -96,11 +99,11 @@ public class Repair {
         this.mechanic_labor_percentage = mechanic_labor_percentage;
     }
 
-    public String getStart_date() {
+    public LocalDateTime getStart_date() {
         return start_date;
     }
 
-    public void setStart_date(LocalDateTime start_date) {
+    public void setStart_date(Date start_date) {
         this.start_date = start_date;
     }
 
@@ -109,5 +112,8 @@ public class Repair {
     }
 
     public void addSparePart(SparePart sparePart) {
+    }
+
+    public void setStartDate(LocalDateTime startDate) {
     }
 }

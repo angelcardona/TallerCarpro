@@ -24,6 +24,9 @@ public class SparePart {
 
     }
 
+    public SparePart(String name, String description, double cost, double profitPercentage, SupplierInvoice supplierInvoice) {
+    }
+
     public String getId() {
         return id;
     }

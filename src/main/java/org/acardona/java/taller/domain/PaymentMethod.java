@@ -1,5 +1,6 @@
 package org.acardona.java.taller.domain;
 
-public class PaymentMethod {
-
+public enum PaymentMethod {
+    CASH,
+    BANK
 }
